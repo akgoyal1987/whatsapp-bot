@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const messagesHandler = require('./whatsapp-api').messagesHandler;
+const whatsappAPI = require('./whatsappapi');
 const config = require('./config.json');
 const app = express();
 app.use(bodyParser.urlencoded({extended: false}));
@@ -11,11 +11,30 @@ app.get("/", function (request, response) {
 });
 
 app.post("/webhook", async function (req, res) {
+    // console.log(req.body.entry[0].changes[0].value.messages);
     if (req.body.object) {
         if (req.body.entry && req.body.entry[0].changes && req.body.entry[0].changes[0].value.messages && req.body.entry[0].changes[0].value.messages[0]) {
             let from = req.body.entry[0].changes[0].value.messages[0].from;
-            let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
-            const response = await messagesHandler(from, msg_body);
+            let msg_body = '';
+            if (req.body.entry[0].changes[0].value.messages[0].type === 'text') {
+                msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
+                const response = await whatsappAPI.sendMessage(from, msg_body);
+            } else {
+                msg_body = req.body.entry[0].changes[0].value.messages[0][req.body.entry[0].changes[0].value.messages[0].type];
+                const mediaInfo = await whatsappAPI.getMediaURL(msg_body);
+                const fileDownloadResponse = await whatsappAPI.downloadFile({...msg_body, ...mediaInfo.data});
+                if (fileDownloadResponse.fileDownloaded) {
+                    const fileUploadResponse = await whatsappAPI.uploadFileToBeSent(fileDownloadResponse);
+                    if (fileUploadResponse.status === 200) {
+                        const response = await whatsappAPI.sendMessage(from, fileUploadResponse.data.id, 'image');
+                    } else {
+                        const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
+                    }
+                } else {
+                    const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
+                }
+                // console.log({fileDownloadResponse, mediaInfo: mediaInfo.data, type: req.body.entry[0].changes[0].value.messages[0].type});
+            }
             // console.log({response});
             res.sendStatus(200);
         } else {
@@ -53,6 +72,6 @@ app.get('*', function(req, res) {
     res.sendStatus(404);
 })
 
-var listener = app.listen(process.env.PORT || 3000, function () {
+const listener = app.listen(process.env.PORT || 3000, function () {
     console.log('Your app is listening on port ' + listener.address().port);
 });

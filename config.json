@@ -1,10 +1,12 @@
 {
   "verify_token": "blue_panda",
   "messaging_product": "whatsapp",
-  "access_token":"EAAKm1gKWd0IBAPiOB4XTA1qRG8xoLmDedZB3xVrAGrgOCAEaUfnZAmKCnz8l6Y9qm3OZBcn6Sf6RSL1Q7zIZCB1hKRTHSC9BdyNI0It5wpu4IpPB8xVWK23CxDba99QITZBPS7uZAK2faPoHQheT2ygsgTruBki3gvqljoWe9WVk541dTWEi08Smhz957ct1oRHnvUk0yYfZAjG1fl9IazD",
+  "access_token":"EAAKm1gKWd0IBAGWx3j1P3PoaWcm8VTZBPHBrrdmV00rWYjvBpKxewfH9jsqXnHox2FQrbcJCiPOwYMrV6DVKnlqkyZBmjZCPeOdwBwvryoZCNTDXU8QtXY00cTAQWVGMVZACBAwZC1HyUzHpASGit6lDLKuU5ECyNYaEG64B2ytS3E7IyLV1gTJJ7LdY3UgOQViCGST1plXdb5tZBXQSl8E",
+  "authorization": "Bearer EAAKm1gKWd0IBAGWx3j1P3PoaWcm8VTZBPHBrrdmV00rWYjvBpKxewfH9jsqXnHox2FQrbcJCiPOwYMrV6DVKnlqkyZBmjZCPeOdwBwvryoZCNTDXU8QtXY00cTAQWVGMVZACBAwZC1HyUzHpASGit6lDLKuU5ECyNYaEG64B2ytS3E7IyLV1gTJJ7LdY3UgOQViCGST1plXdb5tZBXQSl8E",
   "business_id": 138726015414337,
   "phone_number_id": 102664625798707,
   "graphAPIBaseURL": "https://graph.facebook.com",
-  "graphAPIVersion": "v12.0",
-  "messageEndPoint": "messages"
+  "graphAPIVersion": "v13.0",
+  "messageEndPoint": "messages",
+  "mediaEndPoint": "media"
 }
