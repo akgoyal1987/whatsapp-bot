@@ -14,15 +14,21 @@ app.post("/webhook", async function (req, res) {
     // console.log(req.body.entry[0].changes[0].value.messages);
     if (req.body.object) {
         if (req.body.entry && req.body.entry[0].changes && req.body.entry[0].changes[0].value.messages && req.body.entry[0].changes[0].value.messages[0]) {
-            let from = req.body.entry[0].changes[0].value.messages[0].from;
-            let msg_body = '';
-            if (req.body.entry[0].changes[0].value.messages[0].type === 'text') {
-                msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
-                const response = await whatsappAPI.sendMessage(from, msg_body);
+            let msgType = req.body.entry[0].changes[0].value.messages[0].type;
+            if (msgType === 'text') {
+                const response = await whatsappAPI.handleTextMessage(req.body.entry[0].changes[0].value.messages);
+            } else if (msgType === 'button') {
+                const response = await whatsappAPI.handleButtonMessage(req.body.entry[0].changes[0].value.messages);
+            }  else if (msgType === 'document') {
+                const response = await whatsappAPI.handleDocumentMessage(req.body.entry[0].changes[0].value.messages);
+            }  else if (msgType === 'image') {
+                const response = await whatsappAPI.handleImageMessage(req.body.entry[0].changes[0].value.messages);
             } else {
+                // button, text, image, document, contacts, location
+                let from = req.body.entry[0].changes[0].value.messages[0];
                 msg_body = req.body.entry[0].changes[0].value.messages[0][req.body.entry[0].changes[0].value.messages[0].type];
                 const mediaInfo = await whatsappAPI.getMediaURL(msg_body);
-                const fileDownloadResponse = await whatsappAPI.downloadFile({...msg_body, ...mediaInfo.data});
+                const fileDownloadResponse = await whatsappAPI.downloadFile({...msg_body, ...mediaInfo.data, from});
                 if (fileDownloadResponse.fileDownloaded) {
                     const fileUploadResponse = await whatsappAPI.uploadFileToBeSent(fileDownloadResponse);
                     if (fileUploadResponse.status === 200) {

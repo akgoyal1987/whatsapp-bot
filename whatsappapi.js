@@ -4,19 +4,133 @@ const config = require('./config.json');
 const Fs = require('fs')
 const Path = require('path')
 const FormData = require('form-data');
+const conversions = {};
+const stateReplyMessage = {
+    initial: {
+        message: 'treatment_assistance_welcome',
+        type: 'template',
+        next: 'name'
+    },
+    name: {
+        message: 'Please provide your age.',
+        type: 'text',
+        next: 'age'
+    },
+    age: {
+        message: 'gender_request',
+        type: 'template',
+        next: 'gender'
+    },
+    gender: {
+        message: 'Please choose speciality. to choose one, send the number provided in front of speciality name.',
+        type: 'text',
+        next: 'speciality'
+    },
+    speciality: {
+        message: 'Please choose speciality location. to choose one, send the number provided in front of the location',
+        type: 'text',
+        next: 'location'
+    },
+    location: {
+        message: 'Please provide brief medical details.',
+        type: 'text',
+        next: 'medicaldetails'
+    },
+    medicaldetails: {
+        message: 'reqeust_medical_reports',
+        type: 'template',
+        next: 'medicalreports'
+    },
+    medicalreports: {
+        message: 'Thank you so much for contacting us and providing all the details, We will review all the details and will get back to you tomorrow.',
+        type: 'text',
+        next: 'completed'
+    }
+}
 
 
-async function sendMessage(to, msg_body, type) {
+function getUserConversion(mobileNo) {
+    if (!conversions[mobileNo]) {
+        conversions[mobileNo] = {
+            state : 'initial',
+            msgs : []
+        }
+    }
+    return conversions[mobileNo];
+}
+
+function updateConversionState(conversion, message) {
+    conversion.msgs.push(message);
+    conversion.state = stateReplyMessage[conversion.state].next;
+}
+
+
+async function handleTextMessage(messages) {
+    let msg_body = messages[0].text.body;
+    let from = messages[0].from;
+    return await handleMessage(from, msg_body);
+}
+
+async function handleButtonMessage(messages) {
+    let msg_body = messages[0].button.payload;
+    let from = messages[0].from;
+    return await handleMessage(from, msg_body);
+}
+
+async function handleDocumentMessage(messages) {
+    let msg_body = messages[0].text.body;
+    let from = messages[0].from;
+}
+
+async function handleImageMessage(messages) {
+    let msg_body = messages[0].text.body;
+    let from = messages[0].from;
+}
+
+async function handleMessage(from, messages) {
+    let conversion = getUserConversion(from);
+    let stateReply = stateReplyMessage[conversion.state];
+    try {
+        if (conversion.state === 'completed') {
+            return await sendMessage(from, 'Thank you for contacting us again!', 'text');
+        } else {
+            updateConversionState(conversion, messages);
+            let response = await sendMessage(from, stateReply.message, stateReply.type);
+            if (conversion.state === 'completed') {
+                let res = await sendMessage(from, JSON.stringify(conversion.msgs), 'text');
+            }
+            return response;
+        }
+    } catch (error) {
+        console.log(error);
+        return
+    }
+}
+
+async function sendMessage(to, msg, type, parameters) {
     const data = {
-        recipient_type: "individual",
+        // recipient_type: "individual",
         messaging_product: config.messaging_product,
         to
     };
-    if (type) {
+    if (type !== 'text') {
         data.type = type;
-        data[type] = { id: msg_body, caption: 'ack' }
+        if (type === 'template') {
+            data[type] = {
+                name: msg,
+                language: {
+                    code: 'en_US'
+                },
+                "components": [{
+                    "type": "body",
+                    "parameters": parameters
+                }]
+            };
+        } else {
+            data[type] = { id: msg, caption: '' }
+        }
     } else {
-        data.text = {body: 'ack : ' + msg_body}
+        data.text = {body: msg}
     }
     return axios({
         method: 'POST',
@@ -42,9 +156,12 @@ async function getMediaURL(attachmentInfo) {
 
 async function downloadFile(mediaInfo) {
   mediaInfo = getFileName(mediaInfo);
-  let path = Path.resolve(__dirname, 'data', `${mediaInfo.name}.${mediaInfo.ext}`);
+  const userFolderPath = Path.resolve(__dirname, 'data', mediaInfo.from);
+  if (!Fs.existsSync(userFolderPath)) {
+    Fs.mkdirSync(userFolderPath, { recursive: true });
+  }
+  let path = Path.resolve(userFolderPath, `${mediaInfo.name}.${mediaInfo.ext}`);
   while (Fs.existsSync(path)) {
-    console.log(moment().format('YYYYMMDD_hhmmss'));
     mediaInfo.name = `${mediaInfo.name}_${moment().format('YYYYMMDD_HHMMss')}`;
     path = Path.resolve(__dirname, 'data', `${mediaInfo.name}.${mediaInfo.ext}`);
   }
@@ -58,14 +175,15 @@ async function downloadFile(mediaInfo) {
     }
   });
   response.data.pipe(writer);
-  return new Promise((resolve, reject) => {
+  let result = await new Promise((resolve, reject) => {
     writer.on('finish', function(){
         resolve({...mediaInfo, fileDownloaded: true});
-    })
+    });
     writer.on('error', function(){
       resolve({...mediaInfo, fileDownloaded: false});
-    })
+    });
   })
+  return result;
 }
 
 function getFileName(mediaInfo) {
@@ -100,4 +218,4 @@ async function uploadFileToBeSent(mediaInfo) {
     // console.log(response);
     return response;
 }
-module.exports = {sendMessage, getMediaURL, downloadFile, uploadFileToBeSent};
+module.exports = {handleTextMessage, handleButtonMessage, handleDocumentMessage, handleImageMessage, sendMessage, getMediaURL, downloadFile, uploadFileToBeSent, handleMessage};
