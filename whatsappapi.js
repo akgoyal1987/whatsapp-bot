@@ -5,48 +5,6 @@ const Fs = require('fs')
 const Path = require('path')
 const FormData = require('form-data');
 const conversions = {};
-const stateReplyMessage = {
-    initial: {
-        message: 'treatment_assistance_welcome',
-        type: 'template',
-        next: 'name'
-    },
-    name: {
-        message: 'Please provide your age.',
-        type: 'text',
-        next: 'age'
-    },
-    age: {
-        message: 'gender_request',
-        type: 'template',
-        next: 'gender'
-    },
-    gender: {
-        message: 'Please choose speciality. to choose one, send the number provided in front of speciality name.',
-        type: 'text',
-        next: 'speciality'
-    },
-    speciality: {
-        message: 'Please choose speciality location. to choose one, send the number provided in front of the location',
-        type: 'text',
-        next: 'location'
-    },
-    location: {
-        message: 'Please provide brief medical details.',
-        type: 'text',
-        next: 'medicaldetails'
-    },
-    medicaldetails: {
-        message: 'reqeust_medical_reports',
-        type: 'template',
-        next: 'medicalreports'
-    },
-    medicalreports: {
-        message: 'Thank you so much for contacting us and providing all the details, We will review all the details and will get back to you tomorrow.',
-        type: 'text',
-        next: 'completed'
-    }
-}
 
 
 function getUserConversion(mobileNo) {
@@ -61,7 +19,7 @@ function getUserConversion(mobileNo) {
 
 function updateConversionState(conversion, message) {
     conversion.msgs.push(message);
-    conversion.state = stateReplyMessage[conversion.state].next;
+    conversion.state = config.stateReplyMessage[conversion.state].next;
 }
 
 
@@ -89,7 +47,7 @@ async function handleImageMessage(messages) {
 
 async function handleMessage(from, messages) {
     let conversion = getUserConversion(from);
-    let stateReply = stateReplyMessage[conversion.state];
+    let stateReply = config.stateReplyMessage[conversion.state];
     try {
         if (conversion.state === 'completed') {
             return await sendMessage(from, 'Thank you for contacting us again!', 'text');
