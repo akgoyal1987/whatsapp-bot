@@ -67,7 +67,7 @@ async function handleMessage(from, messages) {
     let stateReply = config.stateReplyMessages[conversion.state];
     try {
         if (conversion.state === 'completed') {
-            return await sendMessage(from, 'Thank you for contacting us again!', 'text');
+            return await sendMessage(from, `Thank you for contacting us again ${conversion.msgs[1]}, We are processing your details. will get back to you in some time.`, 'text');
         } else {
             updateConversionState(conversion, messages);
             let response = await sendMessage(from, stateReply.message, stateReply.type);
