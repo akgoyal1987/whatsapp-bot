@@ -43,6 +43,12 @@ async function handleMediaMessage(messages) {
     const fileDownloadResponse = await downloadFile({...content, ...mediaInfo.data, from});
     console.log("Message Type ", type);
     console.log("fileDownloadResponse ", JSON.stringify(fileDownloadResponse));
+    let conversion = getUserConversion(from);
+    if (fileDownloadResponse.fileDownloaded) {
+        conversion.msgs.push(`${mediaInfo.name}.${mediaInfo.ext} downloaded`);
+    } else {
+        conversion.msgs.push(`${mediaInfo.name}.${mediaInfo.ext} not downloaded`);
+    }
     // if (fileDownloadResponse.fileDownloaded) {
     //     const fileUploadResponse = await whatsappAPI.uploadFileToBeSent(fileDownloadResponse);
     //     if (fileUploadResponse.status === 200) {
