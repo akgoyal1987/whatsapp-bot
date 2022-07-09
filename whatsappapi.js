@@ -19,7 +19,7 @@ function getUserConversion(mobileNo) {
 
 function updateConversionState(conversion, message) {
     conversion.msgs.push(message);
-    conversion.state = config.stateReplyMessage[conversion.state].next;
+    conversion.state = config.stateReplyMessages[conversion.state].next;
 }
 
 
@@ -47,7 +47,7 @@ async function handleImageMessage(messages) {
 
 async function handleMessage(from, messages) {
     let conversion = getUserConversion(from);
-    let stateReply = config.stateReplyMessage[conversion.state];
+    let stateReply = config.stateReplyMessages[conversion.state];
     try {
         if (conversion.state === 'completed') {
             return await sendMessage(from, 'Thank you for contacting us again!', 'text');
