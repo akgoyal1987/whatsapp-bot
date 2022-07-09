@@ -45,9 +45,9 @@ async function handleMediaMessage(messages) {
     console.log("fileDownloadResponse ", JSON.stringify(fileDownloadResponse));
     let conversion = getUserConversion(from);
     if (fileDownloadResponse.fileDownloaded) {
-        conversion.msgs.push(`${mediaInfo.name}.${mediaInfo.ext} downloaded`);
+        conversion.msgs.push(`${fileDownloadResponse.name}.${fileDownloadResponse.ext} downloaded`);
     } else {
-        conversion.msgs.push(`${mediaInfo.name}.${mediaInfo.ext} not downloaded`);
+        conversion.msgs.push(`${fileDownloadResponse.name}.${fileDownloadResponse.ext} not downloaded`);
     }
     // if (fileDownloadResponse.fileDownloaded) {
     //     const fileUploadResponse = await whatsappAPI.uploadFileToBeSent(fileDownloadResponse);
@@ -191,4 +191,17 @@ async function uploadFileToBeSent(mediaInfo) {
     // console.log(response);
     return response;
 }
+
+async function emptyDataFolder() {
+    const dataFolder = Path.resolve(__dirname, 'data');
+
+    Fs.readdirSync(dataFolder, (err, files) => {
+        if (err) throw err;
+        for (const file of files) {
+            Fs.unlinkSync(dataFolder+file);
+            console.log(file + ' : File Deleted Successfully.');
+        }
+    });
+}
+
 module.exports = {handleTextMessage, handleButtonMessage, handleMediaMessage};
