@@ -24,25 +24,35 @@ function updateConversionState(conversion, message) {
 
 
 async function handleTextMessage(messages) {
-    let msg_body = messages[0].text.body;
-    let from = messages[0].from;
+    const msg_body = messages[0].text.body;
+    const from = messages[0].from;
     return await handleMessage(from, msg_body);
 }
 
 async function handleButtonMessage(messages) {
-    let msg_body = messages[0].button.payload;
-    let from = messages[0].from;
+    const msg_body = messages[0].button.payload;
+    const from = messages[0].from;
     return await handleMessage(from, msg_body);
 }
 
-async function handleDocumentMessage(messages) {
-    let msg_body = messages[0].text.body;
-    let from = messages[0].from;
-}
-
-async function handleImageMessage(messages) {
-    let msg_body = messages[0].text.body;
-    let from = messages[0].from;
+async function handleMediaMessage(messages) {
+    const type = messages[0].type;
+    const content = messages[0][type];
+    const from = messages[0].from;
+    const mediaInfo = await getMediaURL(msg_body);
+    const fileDownloadResponse = await downloadFile({...content, ...mediaInfo.data, from});
+    console.log("Message Type ", type);
+    console.log("fileDownloadResponse ", JSON.stringify(fileDownloadResponse));
+    // if (fileDownloadResponse.fileDownloaded) {
+    //     const fileUploadResponse = await whatsappAPI.uploadFileToBeSent(fileDownloadResponse);
+    //     if (fileUploadResponse.status === 200) {
+    //         const response = await whatsappAPI.sendMessage(from, fileUploadResponse.data.id, 'image');
+    //     } else {
+    //         const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
+    //     }
+    // } else {
+    //     const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
+    // }
 }
 
 async function handleMessage(from, messages) {
@@ -113,7 +123,7 @@ async function getMediaURL(attachmentInfo) {
 }
 
 async function downloadFile(mediaInfo) {
-  mediaInfo = getFileName(mediaInfo);
+  getFileName(mediaInfo);
   const userFolderPath = Path.resolve(__dirname, 'data', mediaInfo.from);
   if (!Fs.existsSync(userFolderPath)) {
     Fs.mkdirSync(userFolderPath, { recursive: true });
@@ -155,7 +165,6 @@ function getFileName(mediaInfo) {
         mediaInfo.name = mediaInfo.id;
         mediaInfo.ext = 'jpg';
     }
-    return mediaInfo;
 }
 
 async function uploadFileToBeSent(mediaInfo) {
@@ -176,4 +185,4 @@ async function uploadFileToBeSent(mediaInfo) {
     // console.log(response);
     return response;
 }
-module.exports = {handleTextMessage, handleButtonMessage, handleDocumentMessage, handleImageMessage, sendMessage, getMediaURL, downloadFile, uploadFileToBeSent, handleMessage};
+module.exports = {handleTextMessage, handleButtonMessage, handleMediaMessage};

@@ -20,26 +20,24 @@ app.post("/webhook", async function (req, res) {
                     const response = await whatsappAPI.handleTextMessage(req.body.entry[0].changes[0].value.messages);
                 } else if (msgType === 'button') {
                     const response = await whatsappAPI.handleButtonMessage(req.body.entry[0].changes[0].value.messages);
-                }  else if (msgType === 'document') {
-                    const response = await whatsappAPI.handleDocumentMessage(req.body.entry[0].changes[0].value.messages);
-                }  else if (msgType === 'image') {
-                    const response = await whatsappAPI.handleImageMessage(req.body.entry[0].changes[0].value.messages);
-                } else {
+                }  else if (msgType === 'document' || msgType === 'image') {
+                    const response = await whatsappAPI.handleMediaMessage(req.body.entry[0].changes[0].value.messages);
+                }  else {
                     // button, text, image, document, contacts, location
-                    let from = req.body.entry[0].changes[0].value.messages[0];
-                    msg_body = req.body.entry[0].changes[0].value.messages[0][req.body.entry[0].changes[0].value.messages[0].type];
-                    const mediaInfo = await whatsappAPI.getMediaURL(msg_body);
-                    const fileDownloadResponse = await whatsappAPI.downloadFile({...msg_body, ...mediaInfo.data, from});
-                    if (fileDownloadResponse.fileDownloaded) {
-                        const fileUploadResponse = await whatsappAPI.uploadFileToBeSent(fileDownloadResponse);
-                        if (fileUploadResponse.status === 200) {
-                            const response = await whatsappAPI.sendMessage(from, fileUploadResponse.data.id, 'image');
-                        } else {
-                            const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
-                        }
-                    } else {
-                        const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
-                    }
+                    // let from = req.body.entry[0].changes[0].value.messages[0];
+                    // let msg_body = req.body.entry[0].changes[0].value.messages[0][req.body.entry[0].changes[0].value.messages[0].type];
+                    // const mediaInfo = await whatsappAPI.getMediaURL(msg_body);
+                    // const fileDownloadResponse = await whatsappAPI.downloadFile({...msg_body, ...mediaInfo.data, from});
+                    // if (fileDownloadResponse.fileDownloaded) {
+                    //     const fileUploadResponse = await whatsappAPI.uploadFileToBeSent(fileDownloadResponse);
+                    //     if (fileUploadResponse.status === 200) {
+                    //         const response = await whatsappAPI.sendMessage(from, fileUploadResponse.data.id, 'image');
+                    //     } else {
+                    //         const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
+                    //     }
+                    // } else {
+                    //     const response = await whatsappAPI.sendMessage(from, "We ran into some error while downloading file, please send it again.");
+                    // }
                     // console.log({fileDownloadResponse, mediaInfo: mediaInfo.data, type: req.body.entry[0].changes[0].value.messages[0].type});
                 }
                 // console.log({response});
