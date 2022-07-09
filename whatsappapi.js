@@ -192,7 +192,7 @@ async function uploadFileToBeSent(mediaInfo) {
     return response;
 }
 
-async function emptyDataFolder() {
+function emptyDataFolder() {
     const dataFolder = Path.resolve(__dirname, 'data');
     try {
         if (Fs.existsSync(dataFolder)) {
@@ -201,7 +201,7 @@ async function emptyDataFolder() {
         }
         console.log("data folder created");
     } catch(error) {
-        console.log(error);
+        console.log("error in emptyDataFolder", error);
     }
 }
 
