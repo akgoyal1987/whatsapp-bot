@@ -39,7 +39,7 @@ async function handleMediaMessage(messages) {
     const type = messages[0].type;
     const content = messages[0][type];
     const from = messages[0].from;
-    const mediaInfo = await getMediaURL(msg_body);
+    const mediaInfo = await getMediaURL(content);
     const fileDownloadResponse = await downloadFile({...content, ...mediaInfo.data, from});
     console.log("Message Type ", type);
     console.log("fileDownloadResponse ", JSON.stringify(fileDownloadResponse));
