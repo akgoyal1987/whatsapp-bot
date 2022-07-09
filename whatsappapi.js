@@ -195,21 +195,12 @@ async function uploadFileToBeSent(mediaInfo) {
 async function emptyDataFolder() {
     const dataFolder = Path.resolve(__dirname, 'data');
     try {
-        Fs.readdirSync(dataFolder, (err, files) => {
-            if (err) throw err;
-            for (const file of files) {
-                Fs.unlinkSync(dataFolder+file);
-                console.log(file + ' : File Deleted Successfully.');
-            }
-        });
-    } catch(error) {
-        console.log(error);
-    }
-    try{
-        if (!Fs.existsSync(dataFolder)) {
+        if (Fs.existsSync(dataFolder)) {
+            Fs.unlinkSync(dataFolder);
             Fs.mkdirSync(dataFolder, { recursive: true });
         }
-    } catch (error) {
+        console.log("data folder created");
+    } catch(error) {
         console.log(error);
     }
 }
