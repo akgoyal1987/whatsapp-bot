@@ -204,4 +204,4 @@ async function emptyDataFolder() {
     });
 }
 
-module.exports = {handleTextMessage, handleButtonMessage, handleMediaMessage};
+module.exports = {handleTextMessage, handleButtonMessage, handleMediaMessage, emptyDataFolder};
