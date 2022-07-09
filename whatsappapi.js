@@ -41,8 +41,8 @@ async function handleMediaMessage(messages) {
     const from = messages[0].from;
     const mediaInfo = await getMediaURL(content);
     const fileDownloadResponse = await downloadFile({...content, ...mediaInfo.data, from});
-    console.log("Message Type ", type);
-    console.log("fileDownloadResponse ", JSON.stringify(fileDownloadResponse));
+    // console.log("Message Type ", type);
+    // console.log("fileDownloadResponse ", JSON.stringify(fileDownloadResponse));
     let conversion = getUserConversion(from);
     if (fileDownloadResponse.fileDownloaded) {
         conversion.msgs.push(`${fileDownloadResponse.name}.${fileDownloadResponse.ext} downloaded`);
@@ -72,7 +72,8 @@ async function handleMessage(from, messages) {
             updateConversionState(conversion, messages);
             let response = await sendMessage(from, stateReply.message, stateReply.type);
             if (conversion.state === 'completed') {
-                let res = await sendMessage(from, JSON.stringify(conversion.msgs), 'text');
+                response = await sendMessage(from, JSON.stringify(conversion.msgs), 'text');
+                printDataFolder(from);
             }
             return response;
         }
@@ -203,6 +204,18 @@ function emptyDataFolder() {
         console.log("data folder created");
     } catch(error) {
         console.log("error in emptyDataFolder", error);
+    }
+}
+
+function printDataFolder(from) {
+    const dataFolder = Path.resolve(__dirname, 'data', from);
+    if (Fs.existsSync(dataFolder)) {
+        Fs.readdir(dataFolder, (err, files) => {
+            if (err) throw err;
+            for (const file of files) {
+                console.log(file);
+            }
+        });
     }
 }
 
