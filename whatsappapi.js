@@ -151,10 +151,10 @@ async function downloadFile(mediaInfo) {
   response.data.pipe(writer);
   let result = await new Promise((resolve, reject) => {
     writer.on('finish', function(){
-        resolve({...mediaInfo, fileDownloaded: true});
+        resolve({...mediaInfo, fileDownloaded: true, filePath: path});
     });
     writer.on('error', function(){
-      resolve({...mediaInfo, fileDownloaded: false});
+      resolve({...mediaInfo, fileDownloaded: false, filePath: path});
     });
   })
   return result;
